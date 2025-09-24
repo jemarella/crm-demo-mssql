@@ -50,10 +50,30 @@ export interface ContactWithStats extends Contact {
   chatCount: number;
 }
 
+// Add these interfaces
+export interface Call {
+  callid: number;
+  contactnumber: string;
+  agentextension: string;
+  description: string;
+  calldatetime: Date;
+  callduration: string;
+}
+
+export interface Chat {
+  chatid: number;
+  email: string;
+  agentextension: string;
+  subject: string;
+  description: string;
+  calldatetime: Date;
+  callduration: string;
+}
+
 export async function fetchFilteredContacts(
   queryParam: string,
   currentPage: number,
-): Promise<Contact[]> {
+): Promise<ContactWithStats[]> {
   const offset = (currentPage - 1) * ITEMS_PER_PAGE;
 
   try {
@@ -240,18 +260,66 @@ export async function getChatCount(email: string): Promise<number> {
   return rows[0]?.count || 0;
 }
 
-export async function getCallsByNumber(phoneNumber: string) {
-  const rows = await query<CallRow>(
-    `SELECT * FROM calls WHERE contactnumber = ? ORDER BY calldatetime DESC`,
+// Add these functions
+export async function getCallsByContactNumber(phoneNumber: string): Promise<Call[]> {
+  const rows = await query<Call>(
+    `SELECT callid, contactnumber, agentextension, description, calldatetime, callduration 
+     FROM calls WHERE contactnumber = ? ORDER BY calldatetime DESC`,
     [phoneNumber]
   );
   return rows;
 }
 
-export async function getChatsByEmail(email: string) {
-  const rows = await query<ChatRow>(
-    `SELECT * FROM chats WHERE email = ? ORDER BY chatdatetime DESC`, // Fixed column name
+export async function getChatsByEmail(email: string): Promise<Chat[]> {
+  const rows = await query<Chat>(
+    `SELECT chatid, email, agentextension, subject, description, calldatetime, callduration 
+     FROM chats WHERE email = ? ORDER BY calldatetime DESC`,
     [email]
   );
   return rows;
+}
+
+export async function getChatsByContactId(contactId: string): Promise<Chat[]> {
+  // First get the contact email, then get chats
+  const contact = await fetchContactById(contactId);
+  if (!contact) return [];
+  
+  const rows = await query<Chat>(
+    `SELECT chatid, email, agentextension, subject, description, calldatetime, callduration 
+     FROM chats WHERE email = ? ORDER BY calldatetime DESC`,
+    [contact.email]
+  );
+  return rows;
+}
+
+export async function fetchContactByPhone(phoneNumber: string): Promise<Contact | null> {
+  try {
+    // Clean the phone number - remove spaces, dashes, etc.
+    const cleanPhone = phoneNumber.replace(/[\s\-\(\)]/g, '');
+    
+    const data = await query<Contact>(`
+      SELECT TOP 1 * FROM contacts 
+      WHERE REPLACE(REPLACE(REPLACE(REPLACE(phonemobile, ' ', ''), '-', ''), '(', ''), ')', '') = ?
+         OR REPLACE(REPLACE(REPLACE(REPLACE(phonebusiness, ' ', ''), '-', ''), '(', ''), ')', '') = ?
+         OR REPLACE(REPLACE(REPLACE(REPLACE(phonehome, ' ', ''), '-', ''), '(', ''), ')', '') = ?`,
+      [cleanPhone, cleanPhone, cleanPhone]
+    );
+    return data.length > 0 ? data[0] : null;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch contact by phone.');
+  }
+}
+
+export async function fetchContactByEmail(email: string): Promise<Contact | null> {
+  try {
+    const data = await query<Contact>(`
+      SELECT TOP 1 * FROM contacts WHERE LOWER(email) = LOWER(?)`,
+      [email.trim()]
+    );
+    return data.length > 0 ? data[0] : null;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch contact by email.');
+  }
 }

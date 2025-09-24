@@ -1,6 +1,7 @@
 import { UpdateContact, DeleteContact } from '@/app/ui/contacts/buttons';
 import { formatCurrency } from '@/app/lib/utils';
-import { fetchFilteredContacts } from '@/app/lib/contacts-data';
+import { fetchFilteredContacts, ContactWithStats } from '@/app/lib/contacts-data';
+import Link from 'next/link';
 
 export default async function ContactsTable({
   query,
@@ -9,7 +10,7 @@ export default async function ContactsTable({
   query: string;
   currentPage: number;
 }) {
-  const contacts = await fetchFilteredContacts(query, currentPage);
+  const contacts: ContactWithStats[] = await fetchFilteredContacts(query, currentPage);
 
   return (
     <div className="mt-6 flow-root">
@@ -47,6 +48,20 @@ export default async function ContactsTable({
                     <p className="text-sm">
                       Balance: {formatCurrency(contact.saldo)}
                     </p>
+                    <div className="mt-2 flex gap-4">
+                      <Link 
+                        href={`/dashboard/contacts/${contact.contactid}/calls`}
+                        className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                      >
+                        Calls: {contact.callCount}
+                      </Link>
+                      <Link 
+                        href={`/dashboard/contacts/${contact.contactid}/chats`}
+                        className="text-sm text-green-600 hover:text-green-800 hover:underline"
+                      >
+                        Chats: {contact.chatCount}
+                      </Link>
+                    </div>
                   </div>
                   <div className="flex justify-end gap-2">
                     <UpdateContact id={contact.contactid} />
@@ -76,6 +91,12 @@ export default async function ContactsTable({
                 </th>
                 <th scope="col" className="px-3 py-5 font-medium">
                   Balance
+                </th>
+                <th scope="col" className="px-3 py-5 font-medium">
+                  Calls
+                </th>
+                <th scope="col" className="px-3 py-5 font-medium">
+                  Chats
                 </th>
                 <th scope="col" className="relative py-3 pl-6 pr-3">
                   <span className="sr-only">Edit</span>
@@ -116,6 +137,30 @@ export default async function ContactsTable({
                   </td>
                   <td className="whitespace-nowrap px-3 py-3">
                     {formatCurrency(contact.saldo)}
+                  </td>
+                  <td className="whitespace-nowrap px-3 py-3 text-center">
+                    <Link 
+                      href={`/dashboard/contacts/${contact.contactid}/calls`}
+                      className={`inline-flex items-center justify-center rounded-full px-2 py-1 text-xs font-medium hover:underline ${
+                        contact.callCount > 0 
+                          ? 'bg-green-100 text-green-800 hover:bg-green-200' 
+                          : 'bg-gray-100 text-gray-800'
+                      }`}
+                    >
+                      {contact.callCount}
+                    </Link>
+                  </td>
+                  <td className="whitespace-nowrap px-3 py-3 text-center">
+                    <Link 
+                      href={`/dashboard/contacts/${contact.contactid}/chats`}
+                      className={`inline-flex items-center justify-center rounded-full px-2 py-1 text-xs font-medium hover:underline ${
+                        contact.chatCount > 0 
+                          ? 'bg-blue-100 text-blue-800 hover:bg-blue-200' 
+                          : 'bg-gray-100 text-gray-800'
+                      }`}
+                    >
+                      {contact.chatCount}
+                    </Link>
                   </td>
                   <td className="whitespace-nowrap py-3 pl-6 pr-3">
                     <div className="flex justify-end gap-3">

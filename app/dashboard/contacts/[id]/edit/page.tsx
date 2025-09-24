@@ -1,4 +1,5 @@
 import Form from '@/app/ui/contacts/edit-form';
+import ContactLookup from '@/app/ui/contacts/contact-lookup'; // Add this
 import Breadcrumbs from '@/app/ui/invoices/breadcrumbs';
 import { fetchContactById } from '@/app/lib/contacts-data';
 import { notFound } from 'next/navigation';
@@ -29,7 +30,13 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
           },
         ]}
       />
-      <Form contact={contact} />
+      {/* Quick lookup component */}
+      {<ContactLookup />}
+      
+      {/* Edit form */}
+      {/* <div className="bg-white rounded-lg shadow-md">  Queda mejor sin el div*/}
+        <Form contact={contact} />
+      {/* </div>*/}
     </main>
   );
 }
