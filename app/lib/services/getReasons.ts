@@ -1,26 +1,22 @@
-import { execute } from '../database';
+import { query } from '../database';
 
-// Simplified interface - no more mysql2 types
+// Interface for reason records
 interface ReasonRow {
   reason_code: number;
   reason_description: string;
 }
 
-export async function getReasons(): Promise<{reason_code: number, reason_description: string}[]> {
+export async function getReasons(): Promise<ReasonRow[]> {
   try {
-    // Use the MSSQL-compatible execute function
-    const [rows] = await execute<ReasonRow[]>(
+    // Use query for SELECT operations
+    const rows = await query<ReasonRow>(
       `SELECT reason_code, reason_description FROM rcodes ORDER BY reason_code`
     );
     
-    // Map to ensure correct structure (same as before)
-    return rows.map(row => ({
-      reason_code: row.reason_code,
-      reason_description: row.reason_description
-    }));
+    return rows;
     
   } catch (error) {
     console.error('Error fetching reasons:', error);
-    throw error;
+    throw new Error('Failed to fetch reasons from database');
   }
 }

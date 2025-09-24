@@ -6,7 +6,7 @@ import { redirect } from 'next/navigation';
 import { signIn } from '@/auth';
 import { AuthError } from 'next-auth';
 import { verifyUserCredentials } from '@/app/lib/services/userService';
-import pool from '@/app/lib/database';
+import { executeNonQuery } from '@/app/lib/database';
 
 const FormSchema = z.object({
   id: z.string(),
@@ -54,12 +54,13 @@ export async function createInvoice(prevState: State, formData: FormData) {
   const date = new Date().toISOString().split('T')[0];
 
   try {
-    await pool.execute(
+    await executeNonQuery(
       `INSERT INTO invoices (customer_id, amount, status, date)
        VALUES (?, ?, ?, ?)`,
       [customerId, amountInCents, status, date]
     );
   } catch (error) {
+    console.error('Database Error:', error);
     return {
       message: 'Database Error: Failed to Create Invoice.',
     };
@@ -91,13 +92,14 @@ export async function updateInvoice(
   const amountInCents = amount * 100;
 
   try {
-    await pool.execute(
+    await executeNonQuery(
       `UPDATE invoices
        SET customer_id = ?, amount = ?, status = ?
        WHERE id = ?`,
       [customerId, amountInCents, status, id]
     );
   } catch (error) {
+    console.error('Database Error:', error);
     return { message: 'Database Error: Failed to Update Invoice.' };
   }
 
@@ -107,12 +109,15 @@ export async function updateInvoice(
 
 export async function deleteInvoice(id: string) {
   try {
-    await pool.execute(`DELETE FROM invoices WHERE id = ?`, [id]);
+    await executeNonQuery(`DELETE FROM invoices WHERE id = ?`, [id]);
     revalidatePath('/dashboard/invoices');
+    return { message: 'Invoice deleted successfully.' };
   } catch (error) {
+    console.error('Database Error:', error);
     throw new Error('Failed to delete invoice');
   }
 }
+
 
 export async function authenticate(
   prevState: string | undefined,

@@ -337,5 +337,4 @@ export function ContactsTableSkeleton() {
       </div>
     </div>
   );
-  
 }

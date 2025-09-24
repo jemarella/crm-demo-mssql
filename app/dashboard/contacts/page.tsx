@@ -5,7 +5,7 @@ import { CreateContact } from '@/app/ui/contacts/buttons';
 import { lusitana } from '@/app/ui/fonts';
 import { ContactsTableSkeleton } from '@/app/ui/skeletons';
 import { Suspense } from 'react';
-import { fetchContactsPages } from '@/app/lib/data';
+import { fetchContactsPages } from '@/app/lib/contacts-data'
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {

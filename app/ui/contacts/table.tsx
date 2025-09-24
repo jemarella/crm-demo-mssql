@@ -1,6 +1,6 @@
 import { UpdateContact, DeleteContact } from '@/app/ui/contacts/buttons';
 import { formatCurrency } from '@/app/lib/utils';
-import { fetchFilteredContacts } from '@/app/lib/data';
+import { fetchFilteredContacts } from '@/app/lib/contacts-data';
 
 export default async function ContactsTable({
   query,
