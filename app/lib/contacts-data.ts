@@ -24,7 +24,6 @@ interface ChatRow {
 const ITEMS_PER_PAGE = 6;
 
 export interface Contact {
-  idx: number;
   contactid: string;
   firstname: string;
   lastname: string;
@@ -79,7 +78,6 @@ export async function fetchFilteredContacts(
   try {
     const contacts = await query<Contact>(`
       SELECT 
-        idx,
         contactid,
         firstname,
         lastname,
@@ -125,8 +123,8 @@ export async function fetchFilteredContacts(
     // Enhance contacts with call and chat counts
     const contactsWithStats = await Promise.all(
       contacts.map(async (contact) => {
-        const callCount = await getCallCount(contact.phonebusiness);
-        const chatCount = await getChatCount(contact.email);
+        const callCount = await getCallCount(contact.contactid);
+        const chatCount = await getChatCount(contact.contactid);
         
         return {
           ...contact,
@@ -180,7 +178,6 @@ export async function fetchContactById(id: string): Promise<Contact | null> {
   try {
     const data = await query<Contact>(`
       SELECT 
-        idx,
         contactid,
         firstname,
         lastname,
@@ -216,7 +213,6 @@ export async function fetchAllContacts(): Promise<Contact[]> {
   try {
     return await query<Contact>(`
       SELECT 
-        idx,
         contactid,
         firstname,
         lastname,
@@ -244,27 +240,29 @@ export async function fetchAllContacts(): Promise<Contact[]> {
   }
 }
 
-export async function getCallCount(phonebusiness: string): Promise<number> {
+export async function getCallCount(contactId: string): Promise<number> {
+  console.log("Calculate counter calls" + contactId)
   const rows = await query<CountResult>(
-    `SELECT COUNT(*) as total FROM calls WHERE contactnumber = ?`,
-    [phonebusiness]
+    `SELECT COUNT(*) as count FROM calls WHERE contactid = ?`,
+    [contactId]
   );
   return rows[0]?.count || 0;
 }
 
-export async function getChatCount(email: string): Promise<number> {
+export async function getChatCount(contactId: string): Promise<number> {
   const rows = await query<CountResult>(
-    `SELECT COUNT(*) as total FROM chats WHERE email = ?`,
-    [email]
+    `SELECT COUNT(*) as count FROM chats WHERE contactid = ?`,
+    [contactId]
   );
   return rows[0]?.count || 0;
 }
 
 // Add these functions
 export async function getCallsByContactNumber(phoneNumber: string): Promise<Call[]> {
+  console.log("looking for call with: " + phoneNumber)
   const rows = await query<Call>(
     `SELECT callid, contactnumber, agentextension, description, calldatetime, callduration 
-     FROM calls WHERE contactnumber = ? ORDER BY calldatetime DESC`,
+     FROM calls WHERE contactid = ? ORDER BY calldatetime DESC`,
     [phoneNumber]
   );
   return rows;
@@ -273,7 +271,7 @@ export async function getCallsByContactNumber(phoneNumber: string): Promise<Call
 export async function getChatsByEmail(email: string): Promise<Chat[]> {
   const rows = await query<Chat>(
     `SELECT chatid, email, agentextension, subject, description, calldatetime, callduration 
-     FROM chats WHERE email = ? ORDER BY calldatetime DESC`,
+     FROM chats WHERE contactid = ? ORDER BY calldatetime DESC`,
     [email]
   );
   return rows;

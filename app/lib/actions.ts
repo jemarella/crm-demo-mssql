@@ -111,7 +111,7 @@ export async function deleteInvoice(id: string) {
   try {
     await executeNonQuery(`DELETE FROM invoices WHERE id = ?`, [id]);
     revalidatePath('/dashboard/invoices');
-    return { message: 'Invoice deleted successfully.' };
+    // no regresamos nada , de lo contrario hay error en ui/invoices/button.tsx return { message: 'Invoice deleted successfully.' };
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to delete invoice');

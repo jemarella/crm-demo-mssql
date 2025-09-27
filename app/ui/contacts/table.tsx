@@ -19,7 +19,7 @@ export default async function ContactsTable({
           <div className="md:hidden">
             {contacts?.map((contact) => (
               <div
-                key={contact.idx}
+                key={contact.contactid}
                 className="mb-2 w-full rounded-md bg-white p-4"
               >
                 <div className="flex items-center justify-between border-b pb-4">
@@ -106,7 +106,7 @@ export default async function ContactsTable({
             <tbody className="bg-white">
               {contacts?.map((contact) => (
                 <tr
-                  key={contact.idx}
+                  key={contact.contactid}
                   className="w-full border-b py-3 text-sm last-of-type:border-none [&:first-child>td:first-child]:rounded-tl-lg [&:first-child>td:last-child]:rounded-tr-lg [&:last-child>td:first-child]:rounded-bl-lg [&:last-child>td:last-child]:rounded-br-lg"
                 >
                   <td className="whitespace-nowrap py-3 pl-6 pr-3">

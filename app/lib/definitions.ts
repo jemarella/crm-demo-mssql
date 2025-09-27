@@ -76,7 +76,6 @@ export type FormattedCustomersTable = {
 };
 
 export type FormattedContactsTable = {
-  idx: number;
   contactid: string;
   firstname: string;
   lastname: string;

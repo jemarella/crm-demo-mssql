@@ -8,8 +8,7 @@ import { redirect } from 'next/navigation';
 
 // Contact form schema
 const ContactFormSchema = z.object({
-  contactid: z.string(),
-  idx: z.coerce.number(),
+  contactid: z.string().optional(), // Make it optional
   firstname: z.string().min(1, 'First name is required'),
   lastname: z.string().min(1, 'Last name is required'),
   companyname: z.string().optional(),
@@ -49,6 +48,7 @@ export async function createContact(prevState: State, formData: FormData): Promi
 
   // If form validation fails, return errors early. Otherwise, continue.
   if (!validatedFields.success) {
+    console.log ("Errores: " + validatedFields.error)
     return {
       errors: validatedFields.error.flatten().fieldErrors,
       message: 'Missing Fields. Failed to Create Contact.',
@@ -57,16 +57,16 @@ export async function createContact(prevState: State, formData: FormData): Promi
 
   // Prepare data for insertion
   const { firstname, lastname, companyname, email, phonemobile, phonebusiness, saldo, photourl } = validatedFields.data;
-  const contactid = `CT_${Date.now()}`; // Generate a unique contact ID
+  //const contactid = `CT_${Date.now()}`; // Generate a unique contact ID  - It is created aunotically by MSSQL
 
   try {
     // Insert the contact into the database
     await executeNonQuery(
       `INSERT INTO contacts (
-        contactid, firstname, lastname, companyname, email, 
+        firstname, lastname, companyname, email, 
         phonemobile, phonebusiness, saldo, photourl
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [contactid, firstname, lastname, companyname || '', email, 
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [ firstname, lastname, companyname || '', email, 
        phonemobile || '', phonebusiness || '', saldo, photourl || '']
     );
   } catch (error) {
@@ -85,7 +85,6 @@ export async function updateContact(prevState: State, formData: FormData): Promi
   // Validate form fields
   const validatedFields = ContactFormSchema.safeParse({
     contactid: formData.get('contactid'),
-    idx: formData.get('idx'),
     firstname: formData.get('firstname'),
     lastname: formData.get('lastname'),
     companyname: formData.get('companyname'),
@@ -105,7 +104,7 @@ export async function updateContact(prevState: State, formData: FormData): Promi
   }
 
   // Prepare data for update
-  const { contactid, idx, firstname, lastname, companyname, email, phonemobile, phonebusiness, saldo, photourl } = validatedFields.data;
+  const { contactid, firstname, lastname, companyname, email, phonemobile, phonebusiness, saldo, photourl } = validatedFields.data;
 
   try {
     // Update the contact in the database
@@ -113,10 +112,10 @@ export async function updateContact(prevState: State, formData: FormData): Promi
       `UPDATE contacts SET 
         firstname = ?, lastname = ?, companyname = ?, email = ?,
         phonemobile = ?, phonebusiness = ?, saldo = ?, photourl = ?
-      WHERE contactid = ? AND idx = ?`,
+      WHERE contactid = ?`,
       [firstname, lastname, companyname || '', email, 
        phonemobile || '', phonebusiness || '', saldo, photourl || '',
-       contactid, idx]
+       contactid]
     );
   } catch (error) {
     console.error('Database Error:', error);

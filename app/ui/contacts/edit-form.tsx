@@ -20,7 +20,7 @@ export default function Form({ contact }: { contact: Contact }) {
   return (
     <form action={formAction}>
       <input type="hidden" name="contactid" value={contact.contactid} />
-      <input type="hidden" name="idx" value={contact.idx} />
+      {/*<input type="hidden" name="idx" value={contact.idx} />  idx column deleted*/} 
       
       <div className="rounded-md bg-gray-50 p-4 md:p-6">
         {/* Contact Name */}
