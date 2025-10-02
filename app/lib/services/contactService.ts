@@ -1,7 +1,7 @@
 // app/lib/actions.ts
 'use server';
 
-import { z } from 'zod';
+import { number, z } from 'zod';
 import { executeNonQuery } from '../database';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
@@ -15,6 +15,7 @@ const ContactFormSchema = z.object({
   email: z.string().email('Invalid email address'),
   phonemobile: z.string().optional(),
   phonebusiness: z.string().optional(),
+  pwd_ivr:z.coerce.number().optional(),
   saldo: z.coerce.number().default(0),
   photourl: z.string().url('Invalid URL').optional().or(z.literal('')),
 });
@@ -27,6 +28,7 @@ export type State = {
     email?: string[];
     phonemobile?: string[];
     phonebusiness?: string[];
+    pwd_ivr?: string[];
     saldo?: string[];
     photourl?: string[];
   };
@@ -91,6 +93,7 @@ export async function updateContact(prevState: State, formData: FormData): Promi
     email: formData.get('email'),
     phonemobile: formData.get('phonemobile'),
     phonebusiness: formData.get('phonebusiness'),
+    pwd_ivr: formData.get('pwd_ivr'),
     saldo: formData.get('saldo'),
     photourl: formData.get('photourl'),
   });
@@ -104,17 +107,17 @@ export async function updateContact(prevState: State, formData: FormData): Promi
   }
 
   // Prepare data for update
-  const { contactid, firstname, lastname, companyname, email, phonemobile, phonebusiness, saldo, photourl } = validatedFields.data;
+  const { contactid, firstname, lastname, companyname, email, phonemobile, phonebusiness, pwd_ivr, saldo, photourl } = validatedFields.data;
 
   try {
     // Update the contact in the database
     await executeNonQuery(
       `UPDATE contacts SET 
         firstname = ?, lastname = ?, companyname = ?, email = ?,
-        phonemobile = ?, phonebusiness = ?, saldo = ?, photourl = ?
+        phonemobile = ?, phonebusiness = ?, saldo = ?, photourl = ?, pwd_ivr = ?
       WHERE contactid = ?`,
       [firstname, lastname, companyname || '', email, 
-       phonemobile || '', phonebusiness || '', saldo, photourl || '',
+       phonemobile || '', phonebusiness || '', saldo, photourl || '', pwd_ivr || 0,
        contactid]
     );
   } catch (error) {

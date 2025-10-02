@@ -57,6 +57,8 @@ export interface Call {
   description: string;
   calldatetime: Date;
   callduration: string;
+  agentfirstname: string;
+  agentlastname: string;
 }
 
 export interface Chat {
@@ -67,6 +69,8 @@ export interface Chat {
   description: string;
   calldatetime: Date;
   callduration: string;
+  agentfirstname: string;
+  agentlastname: string;
 }
 
 export async function fetchFilteredContacts(
@@ -201,7 +205,8 @@ export async function fetchContactById(id: string): Promise<Contact | null> {
       [id]
     );
 
-    return data.length > 0 ? data[0] : null;
+    return data.length > 0 ? data[0] : null;  
+
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch contact.');
@@ -241,7 +246,6 @@ export async function fetchAllContacts(): Promise<Contact[]> {
 }
 
 export async function getCallCount(contactId: string): Promise<number> {
-  console.log("Calculate counter calls" + contactId)
   const rows = await query<CountResult>(
     `SELECT COUNT(*) as count FROM calls WHERE contactid = ?`,
     [contactId]
@@ -261,7 +265,7 @@ export async function getChatCount(contactId: string): Promise<number> {
 export async function getCallsByContactNumber(phoneNumber: string): Promise<Call[]> {
   console.log("looking for call with: " + phoneNumber)
   const rows = await query<Call>(
-    `SELECT callid, contactnumber, agentextension, description, calldatetime, callduration 
+    `SELECT callid, contactnumber, agentextension, description, calldatetime, callduration, agentfirstname, agentlastname
      FROM calls WHERE contactid = ? ORDER BY calldatetime DESC`,
     [phoneNumber]
   );
@@ -270,7 +274,7 @@ export async function getCallsByContactNumber(phoneNumber: string): Promise<Call
 
 export async function getChatsByEmail(email: string): Promise<Chat[]> {
   const rows = await query<Chat>(
-    `SELECT chatid, email, agentextension, subject, description, calldatetime, callduration 
+    `SELECT chatid, email, agentextension, subject, description, calldatetime, callduration, agentfirstname, agentlastname
      FROM chats WHERE contactid = ? ORDER BY calldatetime DESC`,
     [email]
   );
@@ -283,7 +287,7 @@ export async function getChatsByContactId(contactId: string): Promise<Chat[]> {
   if (!contact) return [];
   
   const rows = await query<Chat>(
-    `SELECT chatid, email, agentextension, subject, description, calldatetime, callduration 
+    `SELECT chatid, email, agentextension, subject, description, calldatetime, callduration, agentfirstname, agentlastname
      FROM chats WHERE email = ? ORDER BY calldatetime DESC`,
     [contact.email]
   );
@@ -320,4 +324,18 @@ export async function fetchContactByEmail(email: string): Promise<Contact | null
     console.error('Database Error:', error);
     throw new Error('Failed to fetch contact by email.');
   }
+}
+
+export async function fetchContactWithStatsById(id: string): Promise<ContactWithStats | null> {
+  const contact = await fetchContactById(id);
+  if (!contact) return null;
+
+  const callCount = await getCallCount(contact.contactid);
+  const chatCount = await getChatCount(contact.contactid);
+  
+  return {
+    ...contact,
+    callCount,
+    chatCount
+  } as ContactWithStats;
 }

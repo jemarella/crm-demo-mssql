@@ -7,13 +7,15 @@ import {
   EnvelopeIcon,
   PhoneIcon,
   CurrencyDollarIcon,
+  PhoneArrowUpRightIcon,
+  ChatBubbleLeftRightIcon,
 } from '@heroicons/react/24/outline';
 import { Button } from '@/app/ui/button';
 import { updateContact, State } from '@/app/lib/services/contactService';
 import { useActionState } from 'react';
-import { Contact } from '@/app/lib/contacts-data';
+import { Contact, ContactWithStats } from '@/app/lib/contacts-data';
 
-export default function Form({ contact }: { contact: Contact }) {
+export default function Form({ contact }: { contact: ContactWithStats }) {
   const initialState: State = { message: null, errors: {} };
   const [state, formAction] = useActionState(updateContact, initialState);
 
@@ -21,8 +23,43 @@ export default function Form({ contact }: { contact: Contact }) {
     <form action={formAction}>
       <input type="hidden" name="contactid" value={contact.contactid} />
       {/*<input type="hidden" name="idx" value={contact.idx} />  idx column deleted*/} 
+
+      <div className="rounded-md bg-gray-50 p-4 md:p-6">   
+      {/* Counters - Read-only and Clickable - Compact version */}
+      <div className="mb-4">
+        <label className="mb-2 block text-sm font-medium">
+          Activity
+        </label>
+        <div className="flex gap-2 mt-2">
+          {/* Call Counter */}
+          <Link 
+            href={`/dashboard/contacts/${contact.contactid}/calls`}
+            className={`inline-flex items-center justify-center rounded-full px-2 py-1 text-xs font-medium hover:underline ${
+              contact.callCount > 0 
+                ? 'bg-green-100 text-green-800 hover:bg-green-200' 
+                : 'bg-gray-100 text-gray-800'
+            }`}
+          >
+            <PhoneArrowUpRightIcon className="w-3 h-3 mr-1" />
+            {contact.callCount} calls
+          </Link>
+          
+          {/* Chat Counter */}
+          <Link 
+            href={`/dashboard/contacts/${contact.contactid}/chats`}
+            className={`inline-flex items-center justify-center rounded-full px-2 py-1 text-xs font-medium hover:underline ${
+              contact.chatCount > 0 
+                ? 'bg-blue-100 text-blue-800 hover:bg-blue-200' 
+                : 'bg-gray-100 text-gray-800'
+            }`}
+          >
+            <ChatBubbleLeftRightIcon className="w-3 h-3 mr-1" />
+            {contact.chatCount} chats
+          </Link>
+        </div>
+      </div>
       
-      <div className="rounded-md bg-gray-50 p-4 md:p-6">
+      {/*<div className="rounded-md bg-gray-50 p-4 md:p-6">*/}
         {/* Contact Name */}
         <div className="mb-4">
           <label htmlFor="firstname" className="mb-2 block text-sm font-medium">
@@ -77,120 +114,154 @@ export default function Form({ contact }: { contact: Contact }) {
           </div>
         </div>
 
-        {/* Company Name */}
-        <div className="mb-4">
+        {/* Company Name and Email in same row */}
+        <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+          {/* Company Name */}
+          <div>
           <label htmlFor="companyname" className="mb-2 block text-sm font-medium">
             Company Name
           </label>
           <div className="relative">
             <input
-              id="companyname"
-              name="companyname"
-              type="text"
-              placeholder="Enter company name"
-              className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
-              aria-describedby="companyname-error"
-              defaultValue={contact.companyname || ''}
+            id="companyname"
+            name="companyname"
+            type="text"
+            placeholder="Enter company name"
+            className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+            aria-describedby="companyname-error"
+            defaultValue={contact.companyname || ''}
             />
             <BuildingOfficeIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
           </div>
           <div id="companyname-error" aria-live="polite" aria-atomic="true">
             {state.errors?.companyname &&
-              state.errors.companyname.map((error: string) => (
-                <p className="mt-2 text-sm text-red-500" key={error}>
-                  {error}
-                </p>
-              ))}
+            state.errors.companyname.map((error: string) => (
+              <p className="mt-2 text-sm text-red-500" key={error}>
+              {error}
+              </p>
+            ))}
           </div>
-        </div>
+          </div>
 
-        {/* Email */}
-        <div className="mb-4">
+          {/* Email */}
+          <div>
           <label htmlFor="email" className="mb-2 block text-sm font-medium">
             Email
           </label>
           <div className="relative">
             <input
-              id="email"
-              name="email"
-              type="email"
-              placeholder="Enter email address"
-              className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
-              aria-describedby="email-error"
-              defaultValue={contact.email}
+            id="email"
+            name="email"
+            type="email"
+            placeholder="Enter email address"
+            className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+            aria-describedby="email-error"
+            defaultValue={contact.email}
             />
             <EnvelopeIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
           </div>
           <div id="email-error" aria-live="polite" aria-atomic="true">
             {state.errors?.email &&
-              state.errors.email.map((error: string) => (
-                <p className="mt-2 text-sm text-red-500" key={error}>
-                  {error}
-                </p>
-              ))}
+            state.errors.email.map((error: string) => (
+              <p className="mt-2 text-sm text-red-500" key={error}>
+              {error}
+              </p>
+            ))}
+          </div>
           </div>
         </div>
 
-        {/* Mobile Phone */}
-        <div className="mb-4">
+        {/* Mobile Phone and Business Phone in same row */}
+        <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+          {/* Mobile Phone */}
+          <div>
           <label htmlFor="phonemobile" className="mb-2 block text-sm font-medium">
             Mobile Phone
           </label>
           <div className="relative">
             <input
-              id="phonemobile"
-              name="phonemobile"
-              type="tel"
-              placeholder="Enter mobile phone"
-              className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
-              aria-describedby="phonemobile-error"
-              defaultValue={contact.phonemobile || ''}
+            id="phonemobile"
+            name="phonemobile"
+            type="tel"
+            placeholder="Enter mobile phone"
+            className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+            aria-describedby="phonemobile-error"
+            defaultValue={contact.phonemobile || ''}
             />
             <PhoneIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
           </div>
           <div id="phonemobile-error" aria-live="polite" aria-atomic="true">
             {state.errors?.phonemobile &&
-              state.errors.phonemobile.map((error: string) => (
-                <p className="mt-2 text-sm text-red-500" key={error}>
-                  {error}
-                </p>
-              ))}
+            state.errors.phonemobile.map((error: string) => (
+              <p className="mt-2 text-sm text-red-500" key={error}>
+              {error}
+              </p>
+            ))}
           </div>
-        </div>
+          </div>
 
-        {/* Business Phone */}
-        <div className="mb-4">
+          {/* Business Phone */}
+          <div>
           <label htmlFor="phonebusiness" className="mb-2 block text-sm font-medium">
             Business Phone
           </label>
           <div className="relative">
             <input
-              id="phonebusiness"
-              name="phonebusiness"
-              type="tel"
-              placeholder="Enter business phone"
-              className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
-              aria-describedby="phonebusiness-error"
-              defaultValue={contact.phonebusiness || ''}
+            id="phonebusiness"
+            name="phonebusiness"
+            type="tel"
+            placeholder="Enter business phone"
+            className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+            aria-describedby="phonebusiness-error"
+            defaultValue={contact.phonebusiness || ''}
             />
             <PhoneIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
           </div>
           <div id="phonebusiness-error" aria-live="polite" aria-atomic="true">
             {state.errors?.phonebusiness &&
-              state.errors.phonebusiness.map((error: string) => (
-                <p className="mt-2 text-sm text-red-500" key={error}>
-                  {error}
-                </p>
-              ))}
+            state.errors.phonebusiness.map((error: string) => (
+              <p className="mt-2 text-sm text-red-500" key={error}>
+              {error}
+              </p>
+            ))}
+          </div>
           </div>
         </div>
 
-        {/* Balance */}
-        <div className="mb-4">
-          <label htmlFor="saldo" className="mb-2 block text-sm font-medium">
-            Balance
-          </label>
-          <div className="relative mt-2 rounded-md">
+        {/* Password IVR and Balance in same row */}
+        <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+          {/* Pwd IVR */}
+          <div>
+            <label htmlFor="pwd_ivr" className="mb-2 block text-sm font-medium">
+              Password IVR
+            </label>
+            <div className="relative">
+              <input
+                id="pwd_ivr"
+                name="pwd_ivr"
+                type="number"
+                placeholder="Enter IVR password"
+                className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+                aria-describedby="pwd_ivr-error"
+                defaultValue={contact.pwd_ivr || 0}
+              />
+              <PhoneIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
+            </div>
+            <div id="pwd_ivr-error" aria-live="polite" aria-atomic="true">
+              {state.errors?.pwd_ivr &&
+                state.errors.pwd_ivr.map((error: string) => (
+                  <p className="mt-2 text-sm text-red-500" key={error}>
+                    {error}
+                  </p>
+                ))}
+            </div>
+          </div>
+
+          {/* Balance */}
+          <div>
+            <label htmlFor="saldo" className="mb-2 block text-sm font-medium">
+              Balance
+            </label>
             <div className="relative">
               <input
                 id="saldo"
@@ -204,14 +275,14 @@ export default function Form({ contact }: { contact: Contact }) {
               />
               <CurrencyDollarIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
             </div>
-          </div>
-          <div id="saldo-error" aria-live="polite" aria-atomic="true">
-            {state.errors?.saldo &&
-              state.errors.saldo.map((error: string) => (
-                <p className="mt-2 text-sm text-red-500" key={error}>
-                  {error}
-                </p>
-              ))}
+            <div id="saldo-error" aria-live="polite" aria-atomic="true">
+              {state.errors?.saldo &&
+                state.errors.saldo.map((error: string) => (
+                  <p className="mt-2 text-sm text-red-500" key={error}>
+                    {error}
+                  </p>
+                ))}
+            </div>
           </div>
         </div>
 

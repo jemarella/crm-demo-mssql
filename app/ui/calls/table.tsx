@@ -8,6 +8,8 @@ interface Call {
   description: string;
   calldatetime: Date;
   callduration: string;
+  agentfirstname: string;
+  agentlastname: string;
 }
 
 interface CallsTableProps {
@@ -53,7 +55,13 @@ export default function CallsTable({ calls, contactName, phoneNumber }: CallsTab
                   Duration
                 </th>
                 <th scope="col" className="px-3 py-5 font-medium">
-                  Agent
+                  Agent Ext
+                </th>
+                <th scope="col" className="px-3 py-5 font-medium">
+                  Agent Name
+                </th>
+                <th scope="col" className="px-3 py-5 font-medium">
+                  Agent LastName
                 </th>
                 <th scope="col" className="px-3 py-5 font-medium">
                   Description
@@ -77,6 +85,12 @@ export default function CallsTable({ calls, contactName, phoneNumber }: CallsTab
                   </td>
                   <td className="whitespace-nowrap px-3 py-3">
                     {call.agentextension}
+                  </td>
+                  <td className="whitespace-nowrap px-3 py-3">
+                    {call.agentfirstname}
+                  </td>
+                  <td className="whitespace-nowrap px-3 py-3">
+                    {call.agentlastname}
                   </td>
                   <td className="px-3 py-3">
                     {call.description}
